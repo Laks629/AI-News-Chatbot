@@ -1,0 +1,15 @@
+# Core scraping
+beautifulsoup4
+requests
+
+# Data handling
+pandas
+
+# Vector search
+faiss-cpu
+
+# Embedding models
+sentence-transformers
+
+# Web app frontend
+streamlit
