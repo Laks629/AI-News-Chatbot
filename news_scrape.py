@@ -13,7 +13,7 @@ source= 'https://techcrunch.com/category/artificial-intelligence/'
 # Load existing data if available
 if os.path.exists('headlines.parquet'):
     df_old = pd.read_parquet('headlines.parquet')
-    print(f"📚 Loaded existing {len(df_old)} headlines")
+    print(f"Loaded existing {len(df_old)} headlines")
 else:
     df_old = pd.DataFrame(columns=['Headline', 'Link', 'Date'])
 
@@ -52,7 +52,7 @@ while True:
         if unique_key not in seen:
             seen.add(unique_key)
             new_articles.append({'Headline': headline, 'Link': link, 'Date': date})
-            print(f"✅ NEW: {headline}")
+            print(f"NEW: {headline}")
             
 
         
@@ -84,9 +84,9 @@ if new_articles:
     index.add(embeddings)
     faiss.write_index(index, 'news.index')
 
-    print("\n✅ Saved: headlines.parquet, news_scrape.csv, news.index")
+    print("\nSaved: headlines.parquet, news_scrape.csv, news.index")
 else:
-    print("\n✅ No new articles found — everything is up to date.")
+    print("\nNo new articles found — everything is up to date.")
 
 
 
