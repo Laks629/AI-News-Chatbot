@@ -38,7 +38,13 @@ It helps surface the **most relevant** and **freshest** articles automatically.
 ---
 
 ## Demo Screenshot
-![Chatbot demo](./screenshots/chatbot_ui.png)
+
+### 🔹 Chatbot UI
+![Chatbot UI](./screenshots/chatbot_ui.png)
+
+### 🔹 Accuracy Report
+![Accuracy Report](./screenshots/accuracy_report.png)
+
 
 ## **Key folders & files**
 
