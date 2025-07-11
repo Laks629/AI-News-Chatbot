@@ -8,7 +8,7 @@ from sentence_transformers import SentenceTransformer
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
-#call the API
+# call the API
 response = requests.get("http://127.0.0.1:8000/headlines")
 data = response.json()
 
@@ -17,7 +17,7 @@ if not data:
     st.error("No headlines found.")
     st.stop()
 
-#encoding headlines 
+# encoding headlines 
 
 df = pd.DataFrame(data)
 
@@ -25,11 +25,11 @@ embeddings = np.vstack(
     df['headline'].apply(lambda x: model.encode(x, normalize_embeddings=True)).to_list()
 ).astype('float32')
 
-#FAISS index
+# FAISS index
 index = faiss.IndexFlatIP(embeddings.shape[1])
 index.add(embeddings)
 
-#Streamlit UI 
+# Streamlit UI 
 st.title("AI Latest News Chatbot")
 st.write("Ask about AI News")
 

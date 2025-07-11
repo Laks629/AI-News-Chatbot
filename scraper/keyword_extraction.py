@@ -13,7 +13,7 @@ db = mysql.connector.connect(
 )
 cursor = db.cursor()
 
-# Pull all headlines INTO a DataFrame
+# Pull all headlines into a DataFrame
 df_headlines = pd.read_sql("SELECT headline FROM headlines", con=db)
 
 #Combine headlines & clean punctuation
@@ -52,7 +52,7 @@ df_keywords = pd.DataFrame(word_freq.items(), columns=['keyword', 'count'])
 print(df_keywords.sort_values('count', ascending=False).head(20))
 
 
-#  Create keywords table if not exists
+# Create keywords table 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS keywords (
     keyword VARCHAR(255) PRIMARY KEY,
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS keywords (
 )
 """)
 
-#  Insert each keyword with mysql.connector
+# Insert keywords
 for _, row in df_keywords.iterrows():
     sql = """
     INSERT INTO keywords (keyword, count)
