@@ -1,38 +1,47 @@
 import streamlit as st
+import requests
 import pandas as pd
-from sentence_transformers import SentenceTransformer
+import numpy as np
 import faiss
-import dateutil.parser
-
-st.title("AI News Chatbot")
-
-# Load data & index
-df = pd.read_parquet("headlines.parquet")
-index = faiss.read_index("news.index")
+from sentence_transformers import SentenceTransformer
 
 
-# Load model
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
+#call the API
+response = requests.get("http://127.0.0.1:8000/headlines")
+data = response.json()
 
-query = st.text_input("🔎 Ask about latest AI trends (e.g. 'AI in agriculture')")
+
+if not data:
+    st.error("No headlines found.")
+    st.stop()
+
+#encoding headlines 
+
+df = pd.DataFrame(data)
+
+embeddings = np.vstack(
+    df['headline'].apply(lambda x: model.encode(x, normalize_embeddings=True)).to_list()
+).astype('float32')
+
+#FAISS index
+index = faiss.IndexFlatIP(embeddings.shape[1])
+index.add(embeddings)
+
+#Streamlit UI 
+st.title("AI Latest News Chatbot")
+st.write("Ask about AI News")
+
+query = st.text_input("Your Query:")
 
 if query:
     query_emb = model.encode(query, normalize_embeddings=True).astype('float32').reshape(1, -1)
-    # Search top 5
-    scores, indices = index.search(query_emb, k=5) #cosine similairty 
+    D, I = index.search(query_emb, k=5)
 
-    st.write(f"## Top matches for: *{query}*")
-
-    for i, idx in enumerate(indices[0]):
-        headline = df.iloc[idx]['Headline']
-        link = df.iloc[idx]['Link']
-        raw_date = df.iloc[idx]['Date']
-
-        try:
-            dt = dateutil.parser.parse(raw_date)
-            date = dt.strftime("%b %d, %Y")
-        except:
-            date = raw_date
-
-        st.write(f"{i+1}. [{headline}]({link}) — *{date}*")
+    st.subheader(f"Top matches for: *{query}*")
+    for idx, score in zip(I[0], D[0]):
+        headline = df.iloc[idx]['headline']
+        link = df.iloc[idx]['link']
+        date = df.iloc[idx]['pub_date']
+        st.write(f"- [{headline}]({link}) — *{date}*")
