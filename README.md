@@ -1,30 +1,38 @@
 # AI News Trend Chatbot
 
-This is a **prototype semantic search chatbot** that crawls AI-related news headlines, generates embeddings using a Sentence Transformer, and matches them to user queries in real time.
+This is a prototype semantic search chatbot that scrapes AI news headlines, stores them in a MySQL database, exposes them through a FastAPI, and enables natural language semantic search via a Streamlit app. It also connects to Power BI for dashboarding and trend analysis.
 
 ---
 
 ## **Project Goal**
-Stay up to date with the latest **AI news** by searching across 9,000+ headlines with a natural language query.  
-It helps surface the **most relevant** and **freshest** articles automatically.
+Stay updated with the latest AI news by searching thousands of headlines with real-time semantic matching, while also exploring trends and keyword patterns using Power BI dashboards.
 
 ---
 
 ## **How it works**
 
 1. **Web Scraper (`news_scrape.py`)**
-   - Crawls TechCrunch’s AI news section.
-   - Stores headlines, links, and dates to `news_scrape.csv` and `headlines.parquet`.
-   - Generates embeddings inline and updates the `FAISS` index (`news.index`).
+   - Scrapes AI-related headlines from TechCrunch.
+   - Saves headline, link, and publish date to a MySQL database.
+   - Optionally updates a local .csv or .parquet file for backup.
 
-2. **Semantic Search**
-   - Uses a `SentenceTransformer` (`all-MiniLM-L6-v2`) for embeddings.
-   - Uses `FAISS` to perform fast similarity search.
-   - When a user asks a question (e.g., *"AI in agriculture"*), the chatbot retrieves top matches based on **cosine similarity**.
+2. **FastAPI (api_chatbot.py)**
+   - Provides a REST endpoint /headlines?days=30 to pull the latest headlines from MySQL.
+   - Filters data dynamically for the Streamlit chatbot and for Power BI ETL.
 
-3. **Frontend**
+3. **Semantic Search (chatbot.py)**
+   - Loads latest headlines using the FastAPI endpoint.
+   - Generates embeddings with a pre-trained SentenceTransformer (all-MiniLM-L6-v2).
+   - Uses FAISS for fast semantic similarity search on the fly.
+   - Displays matching headlines in an interactive Streamlit interface.
+
+4. **Frontend**
    - Runs in **Streamlit** for a simple chatbot-style query UI.
    - Displays headlines + direct links + publish dates.
+
+5. Power BI Dashboard (powerbi/)
+   - Connects to the same MySQL database.
+   - Visualizes articles released by TechCrunch (yearly/ quarterly/ monthly) and the freshest headlines for insights. 
 
 ---
 
@@ -50,25 +58,32 @@ It helps surface the **most relevant** and **freshest** articles automatically.
 
 | File | Purpose |
 |------|---------|
-| `news_scrape.py` | Scrapes headlines, deduplicates, saves to `.csv` + `.parquet` |
+| `scraper/news_scrape.py` | Scrapes headlines, deduplicates, saves to MySQL |
+| `scraper/keyword_extraction.py` | Extracts keywords for Power BI trends |
+| `api_chatbot.py` | REST API for retrieving latest headlines |
 | `chatbot.py` | Streamlit app for user queries |
-| `headlines.parquet` | Stores headlines with metadata |
+| `power_bi/news_count.pbix` | Power BI project file |
 | `news.index` | Saved `FAISS` index for fast similarity search |
 | `accuracy_report.xlsx` | Manual test results with relevance scoring |
 | `accuracy_report.md` | Summary of search accuracy |
+| `requirements.txt` | Python dependencies |
+| `screenshots/` | Screenshots for README |
 
 ---
 
 ## **How to run**
 
 ```bash
-# Install requirements
+# Install Python dependencies
 pip install -r requirements.txt
 
-# Scrape & build index
-python news_scrape.py
+# Scrape and store headlines
+python scraper/news_scrape.py
 
-# Launch chatbot
+# Run API server
+uvicorn api_chatbot:app --reload
+
+# Launch chatbot UI
 streamlit run chatbot.py
 
 ```
@@ -76,6 +91,7 @@ streamlit run chatbot.py
 ## **What’s next**
 
 - Add longer article snippets for richer context to improve semantic matching.
-- Use domain-specific LLM embeddings or fine-tuned models for AI news language.
-- Integrate user feedback signals -e.g., clicks, upvotes, to fine-tune similarity over time.
 - Expand the source beyond TechCrunch to cover broader AI industry updates.
+- Integrate user feedback signals -e.g., clicks to fine-tune similarity(improve matching) over time.
+- Add keyword extraction and NER for deeper insights.
+- Add Power BI embed link in the Streamlit chatbot for seamless navigation.
